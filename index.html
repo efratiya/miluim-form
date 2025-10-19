@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>שאלון הכנה למיצוי זכויות משפחות מילואים</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -65,6 +66,21 @@
             font-size: 16px;
         }
         
+        .text-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+            font-family: inherit;
+        }
+        
+        .text-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
         .radio-group, .checkbox-group {
             display: flex;
             flex-direction: column;
@@ -110,20 +126,6 @@
             font-weight: 600;
             margin-bottom: 10px;
             color: #2d3748;
-        }
-        
-        .email-input input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.2s;
-        }
-        
-        .email-input input:focus {
-            outline: none;
-            border-color: #667eea;
         }
         
         .btn {
@@ -232,14 +234,120 @@
         .admin-link a:hover {
             text-decoration: underline;
         }
-        
-        .alert {
-            padding: 12px;
-            background: #fff3cd;
+
+        .admin-dashboard {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .dashboard-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .close-btn {
+            background: #e53e3e;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .close-btn:hover {
+            background: #c53030;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            border-right: 4px solid #667eea;
+        }
+
+        .stat-card h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 20px;
             border-radius: 8px;
             margin-bottom: 20px;
-            border-right: 4px solid #ffc107;
-            color: #856404;
+        }
+
+        .contacts-table {
+            width: 100%;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .contacts-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .contacts-table th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: right;
+            font-weight: 600;
+        }
+
+        .contacts-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .contacts-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .export-btn {
+            background: #48bb78;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .export-btn:hover {
+            background: #38a169;
         }
     </style>
 </head>
@@ -252,9 +360,34 @@
         
         <div class="content">
             <form id="mainForm">
+                <!-- פרטים אישיים -->
+                <div class="question-block">
+                    <label>שם מלא *</label>
+                    <input type="text" class="text-input" id="fullName" required placeholder="הזן/י שם מלא">
+                </div>
+
+                <div class="question-block">
+                    <label>טלפון *</label>
+                    <input type="tel" class="text-input" id="phone" required placeholder="הזן/י מספר טלפון">
+                </div>
+
+                <div class="question-block">
+                    <label>אני מעוניין/ת להירשם לערב מיצוי זכויות *</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="interested" value="yes" id="interested-yes" required>
+                            <span>כן</span>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="interested" value="no" id="interested-no">
+                            <span>לא</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- שאלה 1 -->
                 <div class="question-block">
-                    <label>האם אני:</label>
+                    <label>האם אני: *</label>
                     <div class="radio-group">
                         <div class="radio-option">
                             <input type="radio" name="status" value="miluim" id="miluim" required>
@@ -269,7 +402,7 @@
                 
                 <!-- שאלה 2 -->
                 <div class="question-block">
-                    <label>סטטוס משפחתי:</label>
+                    <label>סטטוס משפחתי: *</label>
                     <div class="radio-group">
                         <div class="radio-option">
                             <input type="radio" name="marital" value="married" id="married" required>
@@ -292,7 +425,7 @@
                 
                 <!-- שאלה 3 -->
                 <div class="question-block">
-                    <label>האם יש לי ילדים מתחת לגיל 14?</label>
+                    <label>האם יש לי ילדים מתחת לגיל 14? *</label>
                     <div class="radio-group">
                         <div class="radio-option">
                             <input type="radio" name="children" value="yes" id="children-yes" required>
@@ -316,7 +449,7 @@
                 <!-- שדה אימייל -->
                 <div class="email-input">
                     <label>כתובת מייל (אופציונלי):</label>
-                    <input type="email" id="emailInput" placeholder="example@email.com">
+                    <input type="email" id="emailInput" class="text-input" placeholder="example@email.com">
                 </div>
                 
                 <button type="submit" class="btn">קבל/י את רשימת המסמכים</button>
@@ -333,7 +466,70 @@
             </div>
             
             <div class="admin-link">
-                <a href="#" onclick="showResponses(); return false;">👁️ צפייה בכל התשובות (למנהל)</a>
+                <a href="#" onclick="showDashboard(); return false;">👁️ צפייה בניתוח נתונים (למנהל)</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="adminDashboard" class="admin-dashboard hidden">
+        <div class="dashboard-content">
+            <div class="dashboard-header">
+                <h2>📊 ניתוח נתונים ותשובות</h2>
+                <div>
+                    <button class="export-btn" onclick="exportToExcel()">📥 ייצא לאקסל</button>
+                    <button class="close-btn" onclick="closeDashboard()">✕ סגור</button>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>סה"כ משיבים</h3>
+                    <div style="font-size: 36px; font-weight: bold; color: #667eea;" id="totalResponses">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>מעוניינים בערב מיצוי זכויות</h3>
+                    <div style="font-size: 36px; font-weight: bold; color: #48bb78;" id="interestedCount">0</div>
+                </div>
+            </div>
+
+            <!-- רשימת אנשי קשר -->
+            <div class="contacts-table">
+                <h3 style="padding: 20px; background: #f8f9fa; margin: 0;">📞 רשימת אנשי קשר</h3>
+                <table id="contactsTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>שם מלא</th>
+                            <th>טלפון</th>
+                            <th>מעוניין בערב</th>
+                            <th>תאריך</th>
+                        </tr>
+                    </thead>
+                    <tbody id="contactsTableBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- גרפים -->
+            <div class="chart-container">
+                <h3 style="margin-bottom: 20px;">התפלגות לפי סטטוס</h3>
+                <canvas id="statusChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <h3 style="margin-bottom: 20px;">התפלגות לפי סטטוס משפחתי</h3>
+                <canvas id="maritalChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <h3 style="margin-bottom: 20px;">התפלגות לפי ילדים מתחת לגיל 14</h3>
+                <canvas id="childrenChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <h3 style="margin-bottom: 20px;">נושאים פופולריים (8 אפשרויות הבחירה)</h3>
+                <canvas id="topicsChart"></canvas>
             </div>
         </div>
     </div>
@@ -351,6 +547,7 @@
         ];
 
         let responses = [];
+        let charts = {};
 
         function updateOptions() {
             const status = document.querySelector('input[name="status"]:checked')?.value;
@@ -362,16 +559,12 @@
             container.innerHTML = '';
             
             const relevantOptions = options.filter(opt => {
-                // אפשרויות שדורשות ילדים
                 if (opt.requiresChildren && !hasChildren) return false;
-                
-                // אפשרויות 4 ו-8: משרת מילואים תמיד, בן/בת זוג רק עם ילדים
                 if (opt.requiresMiluimOrSpouseWithChildren) {
                     if (status === 'miluim') return true;
                     if (status === 'spouse' && hasChildren) return true;
                     return false;
                 }
-                
                 return true;
             });
             
@@ -398,6 +591,9 @@
         document.getElementById('mainForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
+            const fullName = document.getElementById('fullName').value;
+            const phone = document.getElementById('phone').value;
+            const interested = document.querySelector('input[name="interested"]:checked')?.value;
             const status = document.querySelector('input[name="status"]:checked')?.value;
             const marital = document.querySelector('input[name="marital"]:checked')?.value;
             const children = document.querySelector('input[name="children"]:checked')?.value;
@@ -409,18 +605,20 @@
                 return;
             }
             
-            // שמירת תשובה
             const response = {
                 timestamp: new Date().toLocaleString('he-IL'),
+                fullName: fullName,
+                phone: phone,
+                interested: interested === 'yes' ? 'כן' : 'לא',
                 status: status === 'miluim' ? 'משרת מילואים' : 'בן/בת זוג של משרת מילואים',
                 marital: getMaritalText(marital),
                 children: children === 'yes' ? 'כן' : 'לא',
                 email: email || 'לא צוין',
-                selectedOptions: selectedOptions.map(id => options.find(o => o.id === id).text)
+                selectedOptions: selectedOptions.map(id => options.find(o => o.id === id).text),
+                selectedOptionIds: selectedOptions
             };
             responses.push(response);
             
-            // הצגת תוצאות
             showResults(selectedOptions);
         });
 
@@ -485,11 +683,8 @@
             URL.revokeObjectURL(url);
         }
 
-        function showResponses() {
-            // בקשת סיסמה
+        function showDashboard() {
             const password = prompt('הזן/י סיסמת מנהל:');
-            
-            // הסיסמה שלך - שני אותה לסיסמה שתרצי
             const correctPassword = 'miluimefnu2024';
             
             if (password !== correctPassword) {
@@ -501,21 +696,62 @@
                 alert('אין תשובות עדיין');
                 return;
             }
-            
-            let text = 'כל התשובות:\n\n';
-            responses.forEach((r, i) => {
-                text += `תשובה ${i + 1} (${r.timestamp}):\n`;
-                text += `סטטוס: ${r.status}\n`;
-                text += `מצב משפחתי: ${r.marital}\n`;
-                text += `ילדים מתחת לגיל 14: ${r.children}\n`;
-                text += `מייל: ${r.email}\n`;
-                text += `אפשרויות שנבחרו: ${r.selectedOptions.join(', ')}\n\n`;
-                text += '---\n\n';
-            });
-            
-            const newWindow = window.open('', '_blank');
-            newWindow.document.write('<pre dir="rtl" style="font-family: Arial; padding: 20px;">' + text + '</pre>');
+
+            document.getElementById('adminDashboard').classList.remove('hidden');
+            updateDashboard();
         }
-    </script>
-</body>
-</html>
+
+        function closeDashboard() {
+            document.getElementById('adminDashboard').classList.add('hidden');
+        }
+
+        function updateDashboard() {
+            document.getElementById('totalResponses').textContent = responses.length;
+            const interestedCount = responses.filter(r => r.interested === 'כן').length;
+            document.getElementById('interestedCount').textContent = interestedCount;
+
+            updateContactsTable();
+            updateCharts();
+        }
+
+        function updateContactsTable() {
+            const tbody = document.getElementById('contactsTableBody');
+            tbody.innerHTML = '';
+
+            responses.forEach((r, index) => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><strong>${r.fullName}</strong></td>
+                    <td>${r.phone}</td>
+                    <td>${r.interested}</td>
+                    <td>${r.timestamp}</td>
+                `;
+            });
+        }
+
+        function updateCharts() {
+            // Status Chart
+            const statusData = {};
+            responses.forEach(r => {
+                statusData[r.status] = (statusData[r.status] || 0) + 1;
+            });
+            createPieChart('statusChart', statusData, 'התפלגות לפי סטטוס');
+
+            // Marital Chart
+            const maritalData = {};
+            responses.forEach(r => {
+                maritalData[r.marital] = (maritalData[r.marital] || 0) + 1;
+            });
+            createPieChart('maritalChart', maritalData, 'התפלגות לפי סטטוס משפחתי');
+
+            // Children Chart
+            const childrenData = {};
+            responses.forEach(r => {
+                childrenData[r.children] = (childrenData[r.children] || 0) + 1;
+            });
+            createPieChart('childrenChart', childrenData, 'התפלגות לפי ילדים');
+
+            // Topics Chart
+            const topicsData = {};
+            options.forEach
