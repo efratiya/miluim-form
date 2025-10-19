@@ -685,7 +685,7 @@
 
         function showDashboard() {
             const password = prompt('הזן/י סיסמת מנהל:');
-            const correctPassword = 'miluim2024';
+            const correctPassword = 'miluimefnu2024';
             
             if (password !== correctPassword) {
                 alert('סיסמה שגויה!');
@@ -754,4 +754,116 @@
 
             // Topics Chart
             const topicsData = {};
-            options.forEach
+            options.forEach(opt => {
+                topicsData[opt.text] = 0;
+            });
+            responses.forEach(r => {
+                r.selectedOptions.forEach(opt => {
+                    topicsData[opt] = (topicsData[opt] || 0) + 1;
+                });
+            });
+            createBarChart('topicsChart', topicsData, 'נושאים פופולריים');
+        }
+
+        function createPieChart(canvasId, data, title) {
+            const ctx = document.getElementById(canvasId);
+            
+            if (charts[canvasId]) {
+                charts[canvasId].destroy();
+            }
+
+            charts[canvasId] = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        data: Object.values(data),
+                        backgroundColor: [
+                            '#667eea',
+                            '#764ba2',
+                            '#f093fb',
+                            '#4facfe',
+                            '#43e97b',
+                            '#fa709a',
+                            '#fee140',
+                            '#30cfd0'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            rtl: true,
+                            labels: {
+                                font: {
+                                    family: 'Arial',
+                                    size: 14
+                                }
+                            }
+                        },
+                        title: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function createBarChart(canvasId, data, title) {
+            const ctx = document.getElementById(canvasId);
+            
+            if (charts[canvasId]) {
+                charts[canvasId].destroy();
+            }
+
+            charts[canvasId] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        label: 'מספר בחירות',
+                        data: Object.values(data),
+                        backgroundColor: '#667eea'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function exportToExcel() {
+            let csv = 'שם מלא,טלפון,מעוניין בערב,סטטוס,מצב משפחתי,ילדים,מייל,נושאים שנבחרו,תאריך\n';
+            
+            responses.forEach(r => {
+                const topics = r.selectedOptions.join('; ');
+                csv += `"${r.fullName}","${r.phone}","${r.interested}","${r.status}","${r.marital}","${r.children}","${r.email}","${topics}","${r.timestamp}"\n`;
+            });
+
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'תשובות_שאלון_מילואים.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
