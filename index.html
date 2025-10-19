@@ -486,6 +486,17 @@
         }
 
         function showResponses() {
+            // בקשת סיסמה
+            const password = prompt('הזן/י סיסמת מנהל:');
+            
+            // הסיסמה שלך - שני אותה לסיסמה שתרצי
+            const correctPassword = 'miluimefnu2024';
+            
+            if (password !== correctPassword) {
+                alert('סיסמה שגויה!');
+                return;
+            }
+            
             if (responses.length === 0) {
                 alert('אין תשובות עדיין');
                 return;
