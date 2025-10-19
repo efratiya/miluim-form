@@ -546,6 +546,9 @@
             { id: 8, text: 'סיוע חד פעמי למי שאינו עובד', docs: 'מומלץ להביא קוד לאזור האישי בביטוח הלאומי', requiresChildren: false, requiresMiluimOrSpouseWithChildren: true }
         ];
 
+        // Google Sheets Web App URL
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxl2L4iBG5KOlk1Uu7iU7QWkzefglwWUZHBdMPOQVh-du91laUnk-lYFaiDQzgcHzHFLQ/exec';
+
         let responses = [];
         let charts = {};
 
@@ -614,10 +617,31 @@
                 marital: getMaritalText(marital),
                 children: children === 'yes' ? 'כן' : 'לא',
                 email: email || 'לא צוין',
+                selectedOptions: selectedOptions.map(id => options.find(o => o.id === id).text).join(', '),
+                selectedOptionIds: selectedOptions
+            };
+            
+            // שליחה לגוגל שיט
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(response)
+            }).then(() => {
+                console.log('נשלח בהצלחה לגוגל שיט');
+            }).catch(error => {
+                console.error('שגיאה בשליחה:', error);
+            });
+            
+            // שמירה גם מקומית לצורך הדשבורד
+            const localResponse = {
+                ...response,
                 selectedOptions: selectedOptions.map(id => options.find(o => o.id === id).text),
                 selectedOptionIds: selectedOptions
             };
-            responses.push(response);
+            responses.push(localResponse);
             
             showResults(selectedOptions);
         });
