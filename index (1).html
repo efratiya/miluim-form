@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>האקתון זכויות מילואים</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            direction: rtl;
+        }
+        
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .question-block {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-right: 4px solid #667eea;
+        }
+        
+        .question-block label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #2d3748;
+            font-size: 16px;
+        }
+        
+        .text-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+            font-family: inherit;
+        }
+        
+        .text-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .radio-group, .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .radio-option, .checkbox-option {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .radio-option:hover, .checkbox-option:hover {
+            border-color: #667eea;
+            transform: translateX(-2px);
+        }
+        
+        .radio-option input, .checkbox-option input {
+            margin-left: 10px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        .checkbox-option {
+            background: #f0f4ff;
+        }
+        
+        .email-input {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+        
+        .email-input label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 20px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .results {
+            margin-top: 30px;
+            padding: 25px;
+            background: #f0fff4;
+            border-radius: 12px;
+            border-right: 4px solid #48bb78;
+        }
+        
+        .results h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+        
+        .document-item {
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-right: 3px solid #48bb78;
+        }
+        
+        .document-item strong {
+            color: #2f855a;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .action-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .copy-btn {
+            background: #4299e1;
+            color: white;
+        }
+        
+        .copy-btn:hover {
+            background: #3182ce;
+        }
+        
+        .download-btn {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .download-btn:hover {
+            background: #38a169;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .admin-link {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff3cd;
+            border-radius: 8px;
+        }
+        
+        .admin-link a {
+            color: #856404;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .admin-link a:hover {
+            text-decoration: underline;
+        }
+
+        .admin-dashboard {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .dashboard-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .close-btn {
+            background: #e53e3e;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .close-btn:hover {
+            background: #c53030;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            border-right: 4px solid #667eea;
+        }
+
+        .stat-card h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .contacts-table {
+            width: 100%;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .contacts-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .contacts-table th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: right;
+            font-weight: 600;
+        }
+
+        .contacts-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .contacts-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .export-btn {
+            background: #48bb78;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .export-btn:hover {
+            background: #38a169;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>האקתון זכויות מילואים</h1>
+            <p>מלאו את הפרטים לקבלת רשימת מסמכים מותאמת אישית</p>
+        </div>
+        
+        <div class="content">
+            <form id="mainForm">
+                <!-- פרטים אישיים -->
+                <div class="question-block">
+                    <label>שם מלא *</label>
+                    <input type="text" class="text-input" id="fullName" required placeholder="הזן/י שם מלא">
+                </div>
+
+                <div class="question-block">
+                    <label>טלפון *</label>
+                    <input type="tel" class="text-input" id="phone" required placeholder="הזן/י מספר טלפון">
+                </div>
+
+                <div class="question-block">
+                    <label>אני מעוניין/ת להירשם לערב מיצוי זכויות *</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="interested" value="yes" id="interested-yes" required>
+                            <span>כן</span>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="interested" value="no" id="interested-no">
+                            <span>לא</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- שאלה 1 -->
+                <div class="question-block">
+                    <label>האם אני: *</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="status" value="miluim" id="miluim" required>
+                            <span>משרת מילואים</span>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="status" value="spouse" id="spouse">
+                            <span>בן/בת זוג של משרת מילואים</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- שאלה 2 -->
+                <div class="question-block">
+                    <label>סטטוס משפחתי: *</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="marital" value="married" id="married" required>
+                            <span>נשואים/ידועים בציבור</span>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="marital" value="single" id="single">
+                            <span>רווק/ה</span>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="marital" value="widowed" id="widowed">
+                            <span>אלמנ/ה</span>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="marital" value="divorced" id="divorced">
+                            <span>גרוש/ה</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- שאלה 3 -->
+                <div class="question-block">
+                    <label>האם יש לי ילדים מתחת לגיל 14? *</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="children" value="yes" id="children-yes" required>
+                            <span>כן</span>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="children" value="no" id="children-no">
+                            <span>לא</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- אפשרויות לבחירה -->
+                <div class="question-block" id="optionsBlock" style="display: none;">
+                    <label>האם רלוונטי לי לשמוע על: (ניתן לבחור מספר אפשרויות)</label>
+                    <div class="checkbox-group" id="checkboxContainer">
+                        <!-- יווצר דינמית -->
+                    </div>
+                </div>
+                
+                <!-- שדה אימייל -->
+                <div class="email-input">
+                    <label>כתובת מייל (אופציונלי):</label>
+                    <input type="email" id="emailInput" class="text-input" placeholder="example@email.com">
+                </div>
+                
+                <button type="submit" class="btn">קבל/י את רשימת המסמכים</button>
+            </form>
+            
+            <!-- תוצאות -->
+            <div id="results" class="results hidden">
+                <h2>📋 רשימת המסמכים המומלצים להביא:</h2>
+                <div id="documentsList"></div>
+                <div class="action-buttons">
+                    <button class="copy-btn" onclick="copyResults()">📋 העתק לטקסט</button>
+                    <button class="download-btn" onclick="downloadResults()">⬇️ הורד כקובץ</button>
+                </div>
+            </div>
+            
+            <div class="admin-link">
+                <a href="#" onclick="showDashboard(); return false;">👁️ צפייה בניתוח נתונים (למנהל)</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="adminDashboard" class="admin-dashboard hidden">
+        <div class="dashboard-content">
+            <div class="dashboard-header">
+                <h2>📊 ניתוח נתונים ותשובות</h2>
+                <div>
+                    <button class="export-btn" onclick="exportToExcel()">📥 ייצא לאקסל</button>
+                    <button class="close-btn" onclick="closeDashboard()">✕ סגור</button>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>סה"כ משיבים</h3>
+                    <div style="font-size: 36px; font-weight: bold; color: #667eea;" id="totalResponses">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>מעוניינים בערב מיצוי זכויות</h3>
+                    <div style="font-size: 36px; font-weight: bold; color: #48bb78;" id="interestedCount">0</div>
+                </div>
+            </div>
+
+            <!-- רשימת אנשי קשר -->
+            <div class="contacts-table">
+                <h3 style="padding: 20px; background: #f8f9fa; margin: 0;">📞 רשימת אנשי קשר</h3>
+                <table id="contactsTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>שם מלא</th>
+                            <th>טלפון</th>
+                            <th>מעוניין בערב</th>
+                            <th>תאריך</th>
+                        </tr>
+                    </thead>
+                    <tbody id="contactsTableBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- גרפים -->
+            <div class="chart-container">
+                <h3 style="margin-bottom: 20px;">התפלגות לפי סטטוס</h3>
+                <canvas id="statusChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <h3 style="margin-bottom: 20px;">התפלגות לפי סטטוס משפחתי</h3>
+                <canvas id="maritalChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <h3 style="margin-bottom: 20px;">התפלגות לפי ילדים מתחת לגיל 14</h3>
+                <canvas id="childrenChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <h3 style="margin-bottom: 20px;">נושאים פופולריים (8 אפשרויות הבחירה)</h3>
+                <canvas id="topicsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const options = [
+            { id: 1, text: 'החזרי בייביסיטר', docs: 'מומלץ להכין מראש צילומי מסך של העברות בביט/פייבוקס, או צילומי מסך של משיכת מזומן.', requiresChildren: true, requiresMiluimOrSpouseWithChildren: false },
+            { id: 2, text: 'החזרים על קייטנות', docs: 'מומלץ להביא קבלות של קייטנות', requiresChildren: true, requiresMiluimOrSpouseWithChildren: false },
+            { id: 3, text: 'החזרים על טיפולים רגשיים ופיזיים', docs: 'מומלץ להביא קבלות', requiresChildren: false, requiresMiluimOrSpouseWithChildren: false },
+            { id: 4, text: 'פיצוי לעצמאים', docs: 'לעוסק פטור: מומלץ להביא דו"חות קבלות, או דו"ח הכנסות שנתי מחולק לחודשים לשנים: 2022-2025, טופס הצהרת עוסק פטור לשנת 2023 ו2024 (אפשר למצוא באתר רשות המיסים או לבקש מרואה החשבון). לעוסק מורשה: דוחות ESNA לשנים 2022-2025.', requiresChildren: false, requiresMiluimOrSpouseWithChildren: true },
+            { id: 5, text: 'פיצוי לבן/בת זוג שכירים שהכנסתם נפגעה', docs: 'מומלץ להביא תלושי שכר החל מ7.23 ועד היום.', requiresChildren: true, requiresMiluimOrSpouseWithChildren: false },
+            { id: 6, text: 'מענק חופשת לידה', docs: 'מומלץ להביא לשכירה- אישור מעסיק על חל"ד בתאריכים הרלוונטיים, לעצמאית אישור מרו"ח או דו"ח קבלות שמראה שאין הכנסות בתקופת החל"ד. וכן מומלץ להביא קוד לאזור האישי בביטוח הלאומי.', requiresChildren: true, requiresMiluimOrSpouseWithChildren: false },
+            { id: 7, text: 'מענקים והחזרים לסטודנטים', docs: 'מומלץ להביא אישור לימודים וקבלות על שכ"ל, שיעורים פרטיים, וקורסים חוזרים', requiresChildren: false, requiresMiluimOrSpouseWithChildren: false },
+            { id: 8, text: 'סיוע חד פעמי למי שאינו עובד', docs: 'מומלץ להביא קוד לאזור האישי בביטוח הלאומי', requiresChildren: false, requiresMiluimOrSpouseWithChildren: true }
+        ];
+
+        // Google Sheets Web App URL
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxl2L4iBG5KOlk1Uu7iU7QWkzefglwWUZHBdMPOQVh-du91laUnk-lYFaiDQzgcHzHFLQ/exec';
+
+        let responses = [];
+        let charts = {};
+
+        function updateOptions() {
+            const status = document.querySelector('input[name="status"]:checked')?.value;
+            const hasChildren = document.querySelector('input[name="children"]:checked')?.value === 'yes';
+            
+            if (!status) return;
+            
+            const container = document.getElementById('checkboxContainer');
+            container.innerHTML = '';
+            
+            const relevantOptions = options.filter(opt => {
+                if (opt.requiresChildren && !hasChildren) return false;
+                if (opt.requiresMiluimOrSpouseWithChildren) {
+                    if (status === 'miluim') return true;
+                    if (status === 'spouse' && hasChildren) return true;
+                    return false;
+                }
+                return true;
+            });
+            
+            if (relevantOptions.length > 0) {
+                relevantOptions.forEach(opt => {
+                    const div = document.createElement('div');
+                    div.className = 'checkbox-option';
+                    div.innerHTML = `
+                        <input type="checkbox" name="options" value="${opt.id}" id="opt${opt.id}">
+                        <span>${opt.text}</span>
+                    `;
+                    container.appendChild(div);
+                });
+                document.getElementById('optionsBlock').style.display = 'block';
+            } else {
+                document.getElementById('optionsBlock').style.display = 'none';
+            }
+        }
+
+        document.querySelectorAll('input[name="status"], input[name="children"]').forEach(input => {
+            input.addEventListener('change', updateOptions);
+        });
+
+        document.getElementById('mainForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const fullName = document.getElementById('fullName').value;
+            const phone = document.getElementById('phone').value;
+            const interested = document.querySelector('input[name="interested"]:checked')?.value;
+            const status = document.querySelector('input[name="status"]:checked')?.value;
+            const marital = document.querySelector('input[name="marital"]:checked')?.value;
+            const children = document.querySelector('input[name="children"]:checked')?.value;
+            const email = document.getElementById('emailInput').value;
+            const selectedOptions = Array.from(document.querySelectorAll('input[name="options"]:checked')).map(cb => parseInt(cb.value));
+            
+            if (selectedOptions.length === 0) {
+                alert('נא לבחור לפחות אפשרות אחת');
+                return;
+            }
+            
+            const response = {
+                timestamp: new Date().toLocaleString('he-IL'),
+                fullName: fullName,
+                phone: phone,
+                interested: interested === 'yes' ? 'כן' : 'לא',
+                status: status === 'miluim' ? 'משרת מילואים' : 'בן/בת זוג של משרת מילואים',
+                marital: getMaritalText(marital),
+                children: children === 'yes' ? 'כן' : 'לא',
+                email: email || 'לא צוין',
+                selectedOptions: selectedOptions.map(id => options.find(o => o.id === id).text).join(', '),
+                selectedOptionIds: selectedOptions
+            };
+            
+            // שליחה לגוגל שיט
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(response)
+            }).then(() => {
+                console.log('נשלח בהצלחה לגוגל שיט');
+            }).catch(error => {
+                console.error('שגיאה בשליחה:', error);
+            });
+            
+            // שמירה גם מקומית לצורך הדשבורד
+            const localResponse = {
+                ...response,
+                selectedOptions: selectedOptions.map(id => options.find(o => o.id === id).text),
+                selectedOptionIds: selectedOptions
+            };
+            responses.push(localResponse);
+            
+            showResults(selectedOptions);
+        });
+
+        function getMaritalText(value) {
+            const map = {
+                'married': 'נשואים/ידועים בציבור',
+                'single': 'רווק/ה',
+                'widowed': 'אלמנ/ה',
+                'divorced': 'גרוש/ה'
+            };
+            return map[value] || value;
+        }
+
+        function showResults(selectedOptions) {
+            const resultsList = document.getElementById('documentsList');
+            resultsList.innerHTML = '';
+            
+            selectedOptions.forEach(optId => {
+                const option = options.find(o => o.id === optId);
+                const div = document.createElement('div');
+                div.className = 'document-item';
+                div.innerHTML = `
+                    <strong>${option.text}</strong>
+                    <div>${option.docs}</div>
+                `;
+                resultsList.appendChild(div);
+            });
+            
+            document.getElementById('results').classList.remove('hidden');
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function copyResults() {
+            const selectedOptions = Array.from(document.querySelectorAll('input[name="options"]:checked')).map(cb => parseInt(cb.value));
+            let text = 'רשימת המסמכים המומלצים להביא:\n\n';
+            
+            selectedOptions.forEach((optId, index) => {
+                const option = options.find(o => o.id === optId);
+                text += `${index + 1}. ${option.text}\n${option.docs}\n\n`;
+            });
+            
+            navigator.clipboard.writeText(text).then(() => {
+                alert('הרשימה הועתקה ללוח!');
+            });
+        }
+
+        function downloadResults() {
+            const selectedOptions = Array.from(document.querySelectorAll('input[name="options"]:checked')).map(cb => parseInt(cb.value));
+            let text = 'רשימת המסמכים המומלצים להביא:\n\n';
+            
+            selectedOptions.forEach((optId, index) => {
+                const option = options.find(o => o.id === optId);
+                text += `${index + 1}. ${option.text}\n${option.docs}\n\n`;
+            });
+            
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'רשימת_מסמכים_למילואים.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function showDashboard() {
+            const password = prompt('הזן/י סיסמת מנהל:');
+            const correctPassword = 'miluimefnu2024';
+            
+            if (password !== correctPassword) {
+                alert('סיסמה שגויה!');
+                return;
+            }
+            
+            if (responses.length === 0) {
+                alert('אין תשובות עדיין');
+                return;
+            }
+
+            document.getElementById('adminDashboard').classList.remove('hidden');
+            updateDashboard();
+        }
+
+        function closeDashboard() {
+            document.getElementById('adminDashboard').classList.add('hidden');
+        }
+
+        function updateDashboard() {
+            document.getElementById('totalResponses').textContent = responses.length;
+            const interestedCount = responses.filter(r => r.interested === 'כן').length;
+            document.getElementById('interestedCount').textContent = interestedCount;
+
+            updateContactsTable();
+            updateCharts();
+        }
+
+        function updateContactsTable() {
+            const tbody = document.getElementById('contactsTableBody');
+            tbody.innerHTML = '';
+
+            responses.forEach((r, index) => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><strong>${r.fullName}</strong></td>
+                    <td>${r.phone}</td>
+                    <td>${r.interested}</td>
+                    <td>${r.timestamp}</td>
+                `;
+            });
+        }
+
+        function updateCharts() {
+            // Status Chart
+            const statusData = {};
+            responses.forEach(r => {
+                statusData[r.status] = (statusData[r.status] || 0) + 1;
+            });
+            createPieChart('statusChart', statusData, 'התפלגות לפי סטטוס');
+
+            // Marital Chart
+            const maritalData = {};
+            responses.forEach(r => {
+                maritalData[r.marital] = (maritalData[r.marital] || 0) + 1;
+            });
+            createPieChart('maritalChart', maritalData, 'התפלגות לפי סטטוס משפחתי');
+
+            // Children Chart
+            const childrenData = {};
+            responses.forEach(r => {
+                childrenData[r.children] = (childrenData[r.children] || 0) + 1;
+            });
+            createPieChart('childrenChart', childrenData, 'התפלגות לפי ילדים');
+
+            // Topics Chart
+            const topicsData = {};
+            options.forEach(opt => {
+                topicsData[opt.text] = 0;
+            });
+            responses.forEach(r => {
+                r.selectedOptions.forEach(opt => {
+                    topicsData[opt] = (topicsData[opt] || 0) + 1;
+                });
+            });
+            createBarChart('topicsChart', topicsData, 'נושאים פופולריים');
+        }
+
+        function createPieChart(canvasId, data, title) {
+            const ctx = document.getElementById(canvasId);
+            
+            if (charts[canvasId]) {
+                charts[canvasId].destroy();
+            }
+
+            charts[canvasId] = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        data: Object.values(data),
+                        backgroundColor: [
+                            '#667eea',
+                            '#764ba2',
+                            '#f093fb',
+                            '#4facfe',
+                            '#43e97b',
+                            '#fa709a',
+                            '#fee140',
+                            '#30cfd0'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            rtl: true,
+                            labels: {
+                                font: {
+                                    family: 'Arial',
+                                    size: 14
+                                }
+                            }
+                        },
+                        title: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function createBarChart(canvasId, data, title) {
+            const ctx = document.getElementById(canvasId);
+            
+            if (charts[canvasId]) {
+                charts[canvasId].destroy();
+            }
+
+            charts[canvasId] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        label: 'מספר בחירות',
+                        data: Object.values(data),
+                        backgroundColor: '#667eea'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function exportToExcel() {
+            let csv = 'שם מלא,טלפון,מעוניין בערב,סטטוס,מצב משפחתי,ילדים,מייל,נושאים שנבחרו,תאריך\n';
+            
+            responses.forEach(r => {
+                const topics = r.selectedOptions.join('; ');
+                csv += `"${r.fullName}","${r.phone}","${r.interested}","${r.status}","${r.marital}","${r.children}","${r.email}","${topics}","${r.timestamp}"\n`;
+            });
+
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'גדוד 9214.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
