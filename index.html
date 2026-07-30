@@ -541,4 +541,353 @@
             { id: 3, text: 'החזרים על טיפולים רגשיים ופיזיים', docs: 'מומלץ להביא קבלות', requiresChildren: false, requiresMiluimOrSpouseWithChildren: false },
             { id: 4, text: 'פיצוי לעצמאים', docs: 'לעוסק פטור: מומלץ להביא דו"חות קבלות, או דו"ח הכנסות שנתי מחולק לחודשים לשנים: 2022-2025, טופס הצהרת עוסק פטור לשנת 2023 ו2024 (אפשר למצוא באתר רשות המיסים או לבקש מרואה החשבון). לעוסק מורשה: דוחות ESNA לשנים 2022-2025.', requiresChildren: false, requiresMiluimOrSpouseWithChildren: true },
             { id: 5, text: 'פיצוי לבן/בת זוג שכירים שהכנסתם נפגעה', docs: 'מומלץ להביא תלושי שכר החל מ7.23 ועד היום.', requiresChildren: true, requiresMiluimOrSpouseWithChildren: false },
-            { id: 6, text: 'מענק חופשת לידה', docs: 'מומלץ להביא לשכירה- אישור מעסיק על חל"ד בתאריכים הרלוונטיים, לעצמאית אישור מרו"ח או
+            { id: 6, text: 'מענק חופשת לידה', docs: 'מומלץ להביא לשכירה- אישור מעסיק על חל"ד בתאריכים הרלוונטיים, לעצמאית אישור מרו"ח או דו"ח קבלות שמראה שאין הכנסות בתקופת החל"ד. וכן מומלץ להביא קוד לאזור האישי בביטוח הלאומי.', requiresChildren: true, requiresMiluimOrSpouseWithChildren: false },
+            { id: 7, text: 'מענקים והחזרים לסטודנטים', docs: 'מומלץ להביא אישור לימודים וקבלות על שכ"ל, שיעורים פרטיים, וקורסים חוזרים', requiresChildren: false, requiresMiluimOrSpouseWithChildren: false },
+            { id: 8, text: 'סיוע חד פעמי למי שאינו עובד', docs: 'מומלץ להביא קוד לאזור האישי בביטוח הלאומי', requiresChildren: false, requiresMiluimOrSpouseWithChildren: true }
+        ];
+
+        // Google Sheets Web App URL
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxl2L4iBG5KOlk1Uu7iU7QWkzefglwWUZHBdMPOQVh-du91laUnk-lYFaiDQzgcHzHFLQ/exec';
+
+        let responses = [];
+        let charts = {};
+
+        function updateOptions() {
+            const status = document.querySelector('input[name="status"]:checked')?.value;
+            const hasChildren = document.querySelector('input[name="children"]:checked')?.value === 'yes';
+            
+            if (!status) return;
+            
+            const container = document.getElementById('checkboxContainer');
+            container.innerHTML = '';
+            
+            const relevantOptions = options.filter(opt => {
+                if (opt.requiresChildren && !hasChildren) return false;
+                if (opt.requiresMiluimOrSpouseWithChildren) {
+                    if (status === 'miluim') return true;
+                    if (status === 'spouse' && hasChildren) return true;
+                    return false;
+                }
+                return true;
+            });
+            
+            if (relevantOptions.length > 0) {
+                relevantOptions.forEach(opt => {
+                    const div = document.createElement('div');
+                    div.className = 'checkbox-option';
+                    div.innerHTML = `
+                        <input type="checkbox" name="options" value="${opt.id}" id="opt${opt.id}">
+                        <span>${opt.text}</span>
+                    `;
+                    container.appendChild(div);
+                });
+                document.getElementById('optionsBlock').style.display = 'block';
+            } else {
+                document.getElementById('optionsBlock').style.display = 'none';
+            }
+        }
+
+        document.querySelectorAll('input[name="status"], input[name="children"]').forEach(input => {
+            input.addEventListener('change', updateOptions);
+        });
+
+        document.getElementById('mainForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const fullName = document.getElementById('fullName').value;
+            const phone = document.getElementById('phone').value;
+            const interested = document.querySelector('input[name="interested"]:checked')?.value;
+            const status = document.querySelector('input[name="status"]:checked')?.value;
+            const marital = document.querySelector('input[name="marital"]:checked')?.value;
+            const children = document.querySelector('input[name="children"]:checked')?.value;
+            const email = document.getElementById('emailInput').value;
+            const selectedOptions = Array.from(document.querySelectorAll('input[name="options"]:checked')).map(cb => parseInt(cb.value));
+            
+            if (selectedOptions.length === 0) {
+                alert('נא לבחור לפחות אפשרות אחת');
+                return;
+            }
+            
+            const response = {
+                timestamp: new Date().toLocaleString('he-IL'),
+                fullName: fullName,
+                phone: phone,
+                interested: interested === 'yes' ? 'כן' : 'לא',
+                status: status === 'miluim' ? 'משרת מילואים' : 'בן/בת זוג של משרת מילואים',
+                marital: getMaritalText(marital),
+                children: children === 'yes' ? 'כן' : 'לא',
+                email: email || 'לא צוין',
+                selectedOptions: selectedOptions.map(id => options.find(o => o.id === id).text).join(', '),
+                selectedOptionIds: selectedOptions
+            };
+            
+            // שליחה לגוגל שיט
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(response)
+            }).then(() => {
+                console.log('נשלח בהצלחה לגוגל שיט');
+            }).catch(error => {
+                console.error('שגיאה בשליחה:', error);
+            });
+            
+            // שמירה גם מקומית לצורך הדשבורד
+            const localResponse = {
+                ...response,
+                selectedOptions: selectedOptions.map(id => options.find(o => o.id === id).text),
+                selectedOptionIds: selectedOptions
+            };
+            responses.push(localResponse);
+            
+            showResults(selectedOptions);
+        });
+
+        function getMaritalText(value) {
+            const map = {
+                'married': 'נשואים/ידועים בציבור',
+                'single': 'רווק/ה',
+                'widowed': 'אלמנ/ה',
+                'divorced': 'גרוש/ה'
+            };
+            return map[value] || value;
+        }
+
+        function showResults(selectedOptions) {
+            const resultsList = document.getElementById('documentsList');
+            resultsList.innerHTML = '';
+            
+            selectedOptions.forEach(optId => {
+                const option = options.find(o => o.id === optId);
+                const div = document.createElement('div');
+                div.className = 'document-item';
+                div.innerHTML = `
+                    <strong>${option.text}</strong>
+                    <div>${option.docs}</div>
+                `;
+                resultsList.appendChild(div);
+            });
+            
+            document.getElementById('results').classList.remove('hidden');
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function copyResults() {
+            const selectedOptions = Array.from(document.querySelectorAll('input[name="options"]:checked')).map(cb => parseInt(cb.value));
+            let text = 'רשימת המסמכים המומלצים להביא:\n\n';
+            
+            selectedOptions.forEach((optId, index) => {
+                const option = options.find(o => o.id === optId);
+                text += `${index + 1}. ${option.text}\n${option.docs}\n\n`;
+            });
+            
+            navigator.clipboard.writeText(text).then(() => {
+                alert('הרשימה הועתקה ללוח!');
+            });
+        }
+
+        function downloadResults() {
+            const selectedOptions = Array.from(document.querySelectorAll('input[name="options"]:checked')).map(cb => parseInt(cb.value));
+            let text = 'רשימת המסמכים המומלצים להביא:\n\n';
+            
+            selectedOptions.forEach((optId, index) => {
+                const option = options.find(o => o.id === optId);
+                text += `${index + 1}. ${option.text}\n${option.docs}\n\n`;
+            });
+            
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'רשימת_מסמכים_למילואים.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function showDashboard() {
+            const password = prompt('הזן/י סיסמת מנהל:');
+            const correctPassword = 'miluimefnu2024';
+            
+            if (password !== correctPassword) {
+                alert('סיסמה שגויה!');
+                return;
+            }
+            
+            if (responses.length === 0) {
+                alert('אין תשובות עדיין');
+                return;
+            }
+
+            document.getElementById('adminDashboard').classList.remove('hidden');
+            updateDashboard();
+        }
+
+        function closeDashboard() {
+            document.getElementById('adminDashboard').classList.add('hidden');
+        }
+
+        function updateDashboard() {
+            document.getElementById('totalResponses').textContent = responses.length;
+            const interestedCount = responses.filter(r => r.interested === 'כן').length;
+            document.getElementById('interestedCount').textContent = interestedCount;
+
+            updateContactsTable();
+            updateCharts();
+        }
+
+        function updateContactsTable() {
+            const tbody = document.getElementById('contactsTableBody');
+            tbody.innerHTML = '';
+
+            responses.forEach((r, index) => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><strong>${r.fullName}</strong></td>
+                    <td>${r.phone}</td>
+                    <td>${r.interested}</td>
+                    <td>${r.timestamp}</td>
+                `;
+            });
+        }
+
+        function updateCharts() {
+            // Status Chart
+            const statusData = {};
+            responses.forEach(r => {
+                statusData[r.status] = (statusData[r.status] || 0) + 1;
+            });
+            createPieChart('statusChart', statusData, 'התפלגות לפי סטטוס');
+
+            // Marital Chart
+            const maritalData = {};
+            responses.forEach(r => {
+                maritalData[r.marital] = (maritalData[r.marital] || 0) + 1;
+            });
+            createPieChart('maritalChart', maritalData, 'התפלגות לפי סטטוס משפחתי');
+
+            // Children Chart
+            const childrenData = {};
+            responses.forEach(r => {
+                childrenData[r.children] = (childrenData[r.children] || 0) + 1;
+            });
+            createPieChart('childrenChart', childrenData, 'התפלגות לפי ילדים');
+
+            // Topics Chart
+            const topicsData = {};
+            options.forEach(opt => {
+                topicsData[opt.text] = 0;
+            });
+            responses.forEach(r => {
+                r.selectedOptions.forEach(opt => {
+                    topicsData[opt] = (topicsData[opt] || 0) + 1;
+                });
+            });
+            createBarChart('topicsChart', topicsData, 'נושאים פופולריים');
+        }
+
+        function createPieChart(canvasId, data, title) {
+            const ctx = document.getElementById(canvasId);
+            
+            if (charts[canvasId]) {
+                charts[canvasId].destroy();
+            }
+
+            charts[canvasId] = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        data: Object.values(data),
+                        backgroundColor: [
+                            '#667eea',
+                            '#764ba2',
+                            '#f093fb',
+                            '#4facfe',
+                            '#43e97b',
+                            '#fa709a',
+                            '#fee140',
+                            '#30cfd0'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            rtl: true,
+                            labels: {
+                                font: {
+                                    family: 'Arial',
+                                    size: 14
+                                }
+                            }
+                        },
+                        title: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function createBarChart(canvasId, data, title) {
+            const ctx = document.getElementById(canvasId);
+            
+            if (charts[canvasId]) {
+                charts[canvasId].destroy();
+            }
+
+            charts[canvasId] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        label: 'מספר בחירות',
+                        data: Object.values(data),
+                        backgroundColor: '#667eea'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function exportToExcel() {
+            let csv = 'שם מלא,טלפון,מעוניין בערב,סטטוס,מצב משפחתי,ילדים,מייל,נושאים שנבחרו,תאריך\n';
+            
+            responses.forEach(r => {
+                const topics = r.selectedOptions.join('; ');
+                csv += `"${r.fullName}","${r.phone}","${r.interested}","${r.status}","${r.marital}","${r.children}","${r.email}","${topics}","${r.timestamp}"\n`;
+            });
+
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'גדוד 9214.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
